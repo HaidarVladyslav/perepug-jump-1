@@ -14,6 +14,8 @@ import {
   COUNT_FOR_UPDATE_FORCE_SPEED,
   BRICK_RANDOM_Y_GAP,
   BRICK_Y_BETWEEN_SPACE,
+  COUNT_GAME_FINISHED_CHANING,
+  BRICK_SPEED_Y_MOVE_ACCELERATED,
 } from './game-params';
 
 @Component({
@@ -35,6 +37,9 @@ export class App {
 
       const textureRight = await Assets.load('right-perepug-2.png');
       const textureLeft = await Assets.load('left-perepug-2.png');
+      const gameFinishedSprite = await Assets.load('dead-perepug-2.png');
+      const gameFinishedSprite2 = await Assets.load('dead-2-perepug-2.png');
+      const gameFinishedSprite3 = await Assets.load('dead-3-perepug-2.png');
       Assets.addBundle('fonts', [
         {
           alias: 'ChaChicle',
@@ -98,7 +103,11 @@ export class App {
         app.stage.addChild(brick.container);
       }
 
-      const character = new Character(0, height - 900, textureLeft, textureRight);
+      const character = new Character(0, height - 900, textureLeft, textureRight, [
+        gameFinishedSprite,
+        gameFinishedSprite2,
+        gameFinishedSprite3,
+      ]);
       character.setContainerX(
         Math.min(
           scene.container.x + Math.floor(Math.random() * scene.container.width),
@@ -112,7 +121,14 @@ export class App {
 
       let count = 0;
 
+      let countGameFinishedChanging = 0;
+
       let bricksForce = 0;
+
+      let isEnd = false;
+      let isReachedAfterEndCenterPosition = false;
+
+      let brickYMoveSpeed = BRICK_SPEED_Y_MOVE;
 
       function updateScoreText() {
         const currentScore = scoreText.text;
@@ -123,10 +139,44 @@ export class App {
       }
 
       app.ticker.add((ticker) => {
-        character.setContainerY(
-          character.container.y - (aForce - gForce - bricksForce),
-          // *(character.container.y <= 0 ? 1 / FORCE_WHEN_CHARACTER_OUT_OF_Y_SCREEN : 1),
-        );
+        if ((!isEnd && character.container.y > scene.container.height) || isEnd) {
+          isEnd = true;
+
+          brickYMoveSpeed = BRICK_SPEED_Y_MOVE_ACCELERATED;
+
+          if (!isReachedAfterEndCenterPosition) {
+            character.setContainerY(character.container.y - 50);
+            const centerX = width / 2;
+            if (centerX > character.container.x) {
+              character.setContainerX(character.container.x + 50);
+            }
+            if (centerX < character.container.x) {
+              character.setContainerX(character.container.x - 50);
+            }
+          }
+
+          if (character.container.y <= height / 2) {
+            isReachedAfterEndCenterPosition = true;
+
+            if (++countGameFinishedChanging > COUNT_GAME_FINISHED_CHANING) {
+              countGameFinishedChanging = 0;
+              character.setGameFinishedSprite();
+
+              bricks.forEach((brick, index) => {
+                const value = brick.container.y + 500;
+
+                brick.setNewY(value);
+              });
+            }
+          }
+        } else {
+          if (!isEnd) {
+            character.setContainerY(
+              character.container.y - (aForce - gForce - bricksForce),
+              // *(character.container.y <= 0 ? 1 / FORCE_WHEN_CHARACTER_OUT_OF_Y_SCREEN : 1),
+            );
+          }
+        }
 
         if (controller.keys.left.pressed) {
           character.setSpriteDirection('left');
@@ -158,7 +208,7 @@ export class App {
         const hasSomeBricksMovingBottom =
           character.container.y < VERTICAL_POINT_TO_MOVE_BRICKS_DOWN;
 
-        bricksForce = hasSomeBricksMovingBottom ? BRICK_SPEED_Y_MOVE : 0;
+        bricksForce = hasSomeBricksMovingBottom ? brickYMoveSpeed : 0;
 
         if (hasSomeBricksMovingBottom) {
           score++;
@@ -197,17 +247,19 @@ export class App {
           }
 
           if (brick.container.y !== brick.newY) {
-            brick.container.y += BRICK_SPEED_Y_MOVE;
+            brick.container.y += brickYMoveSpeed;
             // * (character.container.y < 0 ? FORCE_WHEN_CHARACTER_OUT_OF_Y_SCREEN : 1);
           }
 
-          if (brick.container.y > scene.container.y + scene.container.height) {
-            const lastBrick = bricks.at(-1);
-            if (lastBrick) {
-              brick.setContainerY(lastBrick.container.y - BRICK_Y_BETWEEN_SPACE);
+          if (!isEnd) {
+            if (brick.container.y > scene.container.y + scene.container.height) {
+              const lastBrick = bricks.at(-1);
+              if (lastBrick) {
+                brick.setContainerY(lastBrick.container.y - BRICK_Y_BETWEEN_SPACE);
+              }
+              bricks.splice(index, 1);
+              bricks.push(brick);
             }
-            bricks.splice(index, 1);
-            bricks.push(brick);
           }
         });
       });

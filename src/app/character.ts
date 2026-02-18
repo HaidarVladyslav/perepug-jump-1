@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture, TextureSource } from 'pixi.js';
+import { Container, Sprite, Texture, TextureSource } from 'pixi.js';
 
 type CurrentSpriteDirection = 'left' | 'right';
 
@@ -6,11 +6,18 @@ export class Character {
   public container: Container;
   private rightSprite: Sprite;
   private leftSprite: Sprite;
+  private gameFinishedSprites: Sprite[];
+  private gameFinishedSpriteIndex: number = 0;
   private currentSpriteDirection: CurrentSpriteDirection = 'left';
 
-  constructor(x: number, y: number, leftSource: TextureSource, rightSource: TextureSource) {
+  constructor(
+    x: number,
+    y: number,
+    leftSource: TextureSource,
+    rightSource: TextureSource,
+    gameFinishedSprite: TextureSource[],
+  ) {
     this.container = new Container();
-    const rect = new Graphics().rect(0, 0, 40, 60).fill({ color: 'yellow' });
 
     this.rightSprite = new Sprite({
       texture: new Texture({
@@ -22,6 +29,14 @@ export class Character {
         source: leftSource,
       }),
     });
+    this.gameFinishedSprites = gameFinishedSprite.map(
+      (source) =>
+        new Sprite({
+          texture: new Texture({
+            source,
+          }),
+        }),
+    );
 
     this.container.x = x;
     this.container.y = y;
@@ -45,5 +60,17 @@ export class Character {
       value === 'right' ? this.leftSprite : this.rightSprite,
       value === 'left' ? this.leftSprite : this.rightSprite,
     );
+  }
+
+  public setGameFinishedSprite(): void {
+    this.container.removeChildren();
+    const index = this.gameFinishedSpriteIndex;
+
+    if (index >= this.gameFinishedSprites.length - 1) {
+      this.gameFinishedSpriteIndex = 0;
+    } else {
+      this.gameFinishedSpriteIndex++;
+    }
+    this.container.addChild(this.gameFinishedSprites[this.gameFinishedSpriteIndex]);
   }
 }
