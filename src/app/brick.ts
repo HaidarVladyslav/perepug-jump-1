@@ -6,7 +6,10 @@ export class Brick {
 
   constructor(x: number, y: number) {
     this.container = new Container();
-    const brick = new Graphics().rect(0, 0, 200, 20).fill({ color: 'firebrick' });
+    const brick = new Graphics()
+      .roundRect(0, 0, 200, 40, 40)
+      .fill({ color: '#c2b280' })
+      .stroke({ width: 2, color: 0x00ff00 });
     this.container.x = x;
     this.container.y = y;
     this.newY = y;
