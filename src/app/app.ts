@@ -40,6 +40,8 @@ export class App {
       const gameFinishedSprite = await Assets.load('dead-perepug-2.png');
       const gameFinishedSprite2 = await Assets.load('dead-2-perepug-2.png');
       const gameFinishedSprite3 = await Assets.load('dead-3-perepug-2.png');
+      const items = await Assets.load('items.png');
+      const kitchen = await Assets.load('kitchen.png');
       Assets.addBundle('fonts', [
         {
           alias: 'ChaChicle',
@@ -83,16 +85,15 @@ export class App {
       const sceneWidth = Math.max(width / 2, 400);
 
       const controller = new Controller();
-      const scene = new Scene(width / 2, 0, sceneWidth, height, 'black');
+      const scene = new Scene(width / 2, 0, sceneWidth, height, kitchen);
       const bricks: Brick[] = [];
 
       const bricksAmount = BRICKS_AMOUNT;
       const VERTICAL_POINT_TO_MOVE_BRICKS_DOWN = (scene.container.height * 2) / 5;
 
       app.stage.addChild(scene.container);
-
       for (let i = 0; i < bricksAmount; i++) {
-        const brick = new Brick(0, height - BRICK_RANDOM_Y_GAP - i * BRICK_Y_BETWEEN_SPACE);
+        const brick = new Brick(0, height - BRICK_RANDOM_Y_GAP - i * BRICK_Y_BETWEEN_SPACE, items);
         brick.setContainerX(
           Math.min(
             scene.container.x + Math.floor(Math.random() * scene.container.width),

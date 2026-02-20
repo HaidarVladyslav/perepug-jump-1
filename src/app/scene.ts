@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture, TextureSource } from 'pixi.js';
 import { buildGrid } from './helpers/build-grid';
 
 export class Scene {
@@ -8,19 +8,25 @@ export class Scene {
   private y: number;
   public container: Container;
 
-  constructor(x: number, y: number, width: number, height: number, color: string) {
+  constructor(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    source: TextureSource,
+  ) {
     this.width = width;
     this.height = height;
     this.x = x - this.width / 2;
     this.y = y;
 
     this.container = new Container();
-    const rect = new Graphics().rect(0, 0, width, height).fill({ color });
+    const rect = new Sprite({ texture: new Texture({ source }), width, height });
     this.container.x = this.x;
     this.container.y = this.y;
 
     const gridPixel = buildGrid(new Graphics(), width, height).stroke({
-      color: 0xff0000,
+      color: 0xff00ff,
       pixelLine: true,
       width: 1,
     });

@@ -1,19 +1,18 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, TextureSource } from 'pixi.js';
+import { generatePlatformItemsSprites } from './platform-items';
 
 export class Brick {
   public container: Container;
   public newY: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, source: TextureSource) {
     this.container = new Container();
-    const brick = new Graphics()
-      .roundRect(0, 0, 200, 40, 40)
-      .fill({ color: '#c2b280' })
-      .stroke({ width: 2, color: 0x00ff00 });
+    const sprites = generatePlatformItemsSprites(source);
+    const sprite = sprites[Math.floor(Math.random() * sprites.length)];
     this.container.x = x;
     this.container.y = y;
     this.newY = y;
-    this.container.addChild(brick);
+    this.container.addChild(sprite);
   }
 
   public setContainerX(value: number): void {
